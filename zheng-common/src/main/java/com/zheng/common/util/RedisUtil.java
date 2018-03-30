@@ -92,11 +92,12 @@ public class RedisUtil {
 		try {
 			if (null != jedisPool) {
 				jedis = jedisPool.getResource();
-				try {
+				//本地环境不需要密码
+				/*try {
 					jedis.auth(PASSWORD);
 				} catch (Exception e) {
 
-				}
+				}*/
 			}
 		} catch (Exception e) {
 			LOGGER.error("Get jedis error : " + e);
