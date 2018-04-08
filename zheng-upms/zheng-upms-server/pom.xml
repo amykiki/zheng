@@ -87,7 +87,9 @@
                 <!--<version>9.0.0.v20130308</version>-->
                 <version>9.2.7.v20150116</version>
                 <configuration>
-                    <scanIntervalSeconds>3</scanIntervalSeconds>
+                    <!--<scanIntervalSeconds>3</scanIntervalSeconds>-->
+                    <!--通过jrebel热部署-->
+                    <scanIntervalSeconds>0</scanIntervalSeconds>
                     <webApp>
                         <contextPath>/</contextPath>
                     </webApp>
