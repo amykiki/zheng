@@ -112,7 +112,7 @@ public class MybatisGeneratorUtil {
 		File configFile = new File(generatorConfigXml);
 		ConfigurationParser cp = new ConfigurationParser(warnings);
 		Configuration config = cp.parseConfiguration(configFile);
-		DefaultShellCallback callback = new DefaultShellCallback(true);
+		DefaultShellCallback callback = new DefaultShellCallback(true); //该类用来设置是否overwrite，true表示需要overwrite
 		MyBatisGenerator myBatisGenerator = new MyBatisGenerator(config, callback, warnings);
 		myBatisGenerator.generate(null);
 		for (String warning : warnings) {
