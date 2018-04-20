@@ -129,7 +129,7 @@ public class AESUtil {
 
     public static void main(String[] args) {
         String[] keys = {
-                "java0502", "123456"
+                "java0502", "123@Aa456"
         };
         System.out.println("key | AESEncode | AESDecode");
         for (String key : keys) {
