@@ -87,7 +87,8 @@
                 <!--<version>9.0.0.v20130308</version>-->
                 <version>9.2.7.v20150116</version>
                 <configuration>
-                    <scanIntervalSeconds>3</scanIntervalSeconds>
+                    <!--此处填写为0，表示热部署扫描由Jrebel完成，填写其他正数表示扫描由jetty插件完成-->
+                    <scanIntervalSeconds>0</scanIntervalSeconds>
                     <webApp>
                         <contextPath>/</contextPath>
                     </webApp>
