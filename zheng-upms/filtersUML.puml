@@ -1,0 +1,9 @@
+@startuml
+abstract class AbstractFilter {
+FilterConfig filterConfig
++void init(FilterConfig filterConfig)
+#String getInitParam(String paramName)
+}
+
+note right of AbstractFilter : 该抽象类的作用是重写了init方法，把filterConfig保存在变量中。\n提供getInitParam()方法来获取initConfig中的参数
+@enduml
