@@ -1,9 +1,21 @@
 @startuml
 abstract class AbstractFilter {
-FilterConfig filterConfig
+#FilterConfig filterConfig
 +void init(FilterConfig filterConfig)
 #String getInitParam(String paramName)
 }
 
-note right of AbstractFilter : 该抽象类的作用是重写了init方法，把filterConfig保存在变量中。\n提供getInitParam()方法来获取initConfig中的参数
+interface Nameable
+
+abstract class NameableFilter {
+-String name
+#String getName()
+}
+
+note top of AbstractFilter : 该抽象类的作用是重写了init方法，把filterConfig保存在变量中。\n提供getInitParam()方法来获取initConfig中的参数
+
+note right of NameableFilter : Nameable接口用来设置名字，比如configuration中\n该filter实现了Nameable接口的setName()方法。\n假如没有显示设置name，则默认使用web.xml中的filter名字
+
+AbstractFilter <|-- NameableFilter
+Nameable <|.. NameableFilter
 @enduml
