@@ -1,7 +1,7 @@
 @startuml
 abstract class AbstractFilter {
 #FilterConfig filterConfig
-+void init(FilterConfig filterConfig)
++final void init(FilterConfig filterConfig)
 #String getInitParam(String paramName)
 }
 
@@ -12,10 +12,62 @@ abstract class NameableFilter {
 #String getName()
 }
 
+abstract class OncePerRequestFilter {
++ final void doFilter(ServletRequest request, \nServletResponse response, FilterChain filterChain)
+#{abstract} doFilterInternal(ServletRequest request, \nServletResponse response, FilterChain chain)
+}
+
+abstract class AdviceFilter {
+# boolean preHandle(ServletRequest request, \nServletResponse response)
+# void postHandle(ServletRequest request, \nServletResponse response)
++ void afterCompletion(ServletRequest request, \nServletResponse response, Exception exception)
+# void executeChain(ServletRequest request, \nServletResponse response, FilterChain chain)
+}
+
+interface PathConfigProcessor {
++ Filter processPathConfig(String path,\nString Config)
+}
+
+abstract class PathMatchingFilter {
+}
+AbstractFilter <|-- NameableFilter
+Nameable <|.. NameableFilter
+NameableFilter <|-- OncePerRequestFilter
+OncePerRequestFilter <|-- AdviceFilter
+PathConfigProcessor <|.. PathMatchingFilter
+AdviceFilter <|-- PathMatchingFilter
 note top of AbstractFilter : 该抽象类的作用是重写了init方法，把filterConfig保存在变量中。\n提供getInitParam()方法来获取initConfig中的参数
 
 note right of NameableFilter : Nameable接口用来设置名字，比如configuration中\n该filter实现了Nameable接口的setName()方法。\n假如没有显示设置name，则默认使用web.xml中的filter名字
 
-AbstractFilter <|-- NameableFilter
-Nameable <|.. NameableFilter
+note right of OncePerRequestFilter
+Filter base class that guarantees to be just executed once per request,
+on any servlet container.
+It provides a doFilterInternal method with HttpServletRequest and HttpServletResponse arguments.
+
+doFilterInternal方法在doFilter方法内部被调用，doFilter方法已是final方法，子类无法覆盖
+end note
+
+note right of AdviceFilter
+该filter通过preHandle, postHandle和afterCompletion方法
+为servlet启用了AOP风格的"around"通知(advice)
+
+<b>preHandle</b>: 返回为true时，filter chain可以继续执行，为false则不行。
+                  这个方法在chain被实际执行之前被调用
+<b>postHandle</b>: 只有在filter chain执行时没有异常发生，允许调用‘post'通知逻辑。
+                  也就是说，<b>executeChain</b>方法如果抛出异常，这个方法用于不会被调用。
+                  因此在实现逻辑的时候，要注意这一点。大多数资源的<i>cleanup</i>行为是在
+                  <b>afterCompletion</b>中实现的。即使chain中抛出了异常，该方法也保证会被调用。
+<b>afterCompletion</b>: 即使<b>preHandle</b>返回false或者chain处理中抛出了异常，
+                           该方法仍然会在<b>finally</b>块中被调用。可以用于资源清理
+end note
+
+note left of PathConfigProcessor
+处理指定的配置，对给定的路径是唯一的
+返回能够执行路径/配置组合的filter
+end note
+
+note right of PathMatchingFilter
+处理器的基类，只处理指定路径的过滤器而放行其他的过滤器
+end note
 @enduml
