@@ -5,7 +5,9 @@ abstract class AbstractFilter {
 #String getInitParam(String paramName)
 }
 
-interface Nameable
+interface Nameable {
++ void setName(String name)
+}
 
 abstract class NameableFilter {
 -String name
@@ -29,6 +31,11 @@ interface PathConfigProcessor {
 }
 
 abstract class PathMatchingFilter {
+# PatternMatcher pathMatcher
+# Map<String, Object> appliedPaths
++ Filter processPathConfig(String path, String config)
+# boolean preHandle(ServletRequest request, ServletResponse response);
+# boolean onPreHandle(ServletRequest request, ServletResponse response, Object mappedValue)
 }
 AbstractFilter <|-- NameableFilter
 Nameable <|.. NameableFilter
@@ -69,5 +76,18 @@ end note
 
 note right of PathMatchingFilter
 处理器的基类，只处理指定路径的过滤器而放行其他的过滤器
+<b>pathMatcher</b> = new AntPathMatcher();
+<b>appliedPaths</b> = new LinkedHashMap<~>();
+                    该集合是用来保存path-to-config entries.
+                    key是需要处理的filter
+                    value为该filter对应的配置的元素，在<i>config</i>元素中是以逗号分隔的值
+
+<b>processPathConfig</b>: 方法实现了PathConfigProcessor接口，在该方法中分隔了按逗号分隔config信息，
+                               并将path和values分别放入类的属性appliedPaths中。 this.appliedPaths.put(path, values)
+<b>preHandle</b>: 重写了父类AdviceFilter中的preHandle方法，在该方法中判断当前的请求路径是否匹配
+                  配置的path，如果不匹配，则filter链继续，如果匹配，则后续会调用isFilterChainContinued方法
+                  进行判断过滤器链是否继续
+<b>onPreHandle</b>: 默认返回true，该方法被isFilterChainContinued调用，子类可以根据需要来重载该方法。
+                      返回true表示请求继续，false表示由该filter来直接响应
 end note
 @enduml
