@@ -37,12 +37,22 @@ abstract class PathMatchingFilter {
 # boolean preHandle(ServletRequest request, ServletResponse response);
 # boolean onPreHandle(ServletRequest request, ServletResponse response, Object mappedValue)
 }
+
+abstract class AccessControlFilter {
+- String loginUrl
++ boolean onPreHandle(ServletRequest request, \nServletResponse response, Object mappedValue)
+# {abstract} boolean isAccessAllowed(ServletRequest request, \nServletResponse response, Object mappedValue)
+# {abstract} boolean onAccessDenied(ServletRequest request, \nServletResponse response)
+# boolean onAcessDenied(ServletRequest request, \nServletResponse response, Object mappedValue)
+# void saveRequestAndRedirectToLogin(ServletRequest request, \nServletResponse response)
+}
 AbstractFilter <|-- NameableFilter
 Nameable <|.. NameableFilter
 NameableFilter <|-- OncePerRequestFilter
 OncePerRequestFilter <|-- AdviceFilter
 PathConfigProcessor <|.. PathMatchingFilter
 AdviceFilter <|-- PathMatchingFilter
+PathMatchingFilter <|-- AccessControlFilter
 note top of AbstractFilter : 该抽象类的作用是重写了init方法，把filterConfig保存在变量中。\n提供getInitParam()方法来获取initConfig中的参数
 
 note right of NameableFilter : Nameable接口用来设置名字，比如configuration中\n该filter实现了Nameable接口的setName()方法。\n假如没有显示设置name，则默认使用web.xml中的filter名字
@@ -89,5 +99,28 @@ note right of PathMatchingFilter
                   进行判断过滤器链是否继续
 <b>onPreHandle</b>: 默认返回true，该方法被isFilterChainContinued调用，子类可以根据需要来重载该方法。
                       返回true表示请求继续，false表示由该filter来直接响应
+end note
+
+note right of AccessControlFilter
+该类是对资源进行访问控制和跳转到登录页面的所有过滤器的父类。
+当用户没有被认证时，很多子类使用了<i>saveRequestAndRedirectToLogin</i>方法进行跳转
+<b>loginUrl</b>: 该变量是跳转到登录页时，登录的url，当没有设定时，有默认值，
+               应用方可以通过setLoginUrl()方法设置loginUrl的值
+               通过getLoginUrl()获取现在系统的loginUrl
+
+<b>onPreHandle</b>: 重写了父类的onPreHandle方法，
+                      返回的值为 isAccessAllowed() || onAccessDenied()两个方法的并
+<b>isAccessAllowed</b>: 该方法是抽象方法，需要子类覆盖。
+                            返回<b>true</b>表示请求正常通过该filter
+                            返回<b>false</b>表示请求需要被OnAccessDenied(request, response, mappedValue)处理
+<b>onAccessDenied</b>: 本类中有两个同名的onAccessDenied方法，参数中有mappedValue的方法只是不带mappedValue方法的代理
+                          重点是onAccessDenied(ServletRequest request, ServletResponse response)方法
+                          该方法是一个抽象函数，子类必须覆盖，用于当请求被isAccessAllowed方法拒绝访问时处理请求
+                          返回<b>true</b>表示请求继续
+                          返回<b>false</b>表示子类直接处理/渲染响应
+<b>saveRequestAndRedirectToLogin</b>: 当子类需要重定向到login时，这个方法很有用，该方法中有两个方法组成
+                                                    saveRequest()方法把本次请求保存在session中，以便登录成功后调用
+                                                    redirectToLogin()方法跳转到登录页
+
 end note
 @enduml
